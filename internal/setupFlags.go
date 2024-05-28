@@ -11,7 +11,7 @@ func SetupFlags() (username *string, password *string, threshold *string, err er
 	// Define flags
 	username = flag.String("u", "", "Username for device access")
 	password = flag.String("p", "", "Password for device access")
-	threshold = flag.String("t", "2m", "Time threshold for interface flaps (e.g., 2m for 2 minutes, 2h for 2 hours, 2d for 2 days, 3M for 3 months)")
+	threshold = flag.String("t", "", "Time threshold for interface flaps (e.g., 2m for 2 minutes, 2h for 2 hours, 2d for 2 days, 3M for 3 months)")
 
 	// Custom usage message
 	flag.Usage = func() {
