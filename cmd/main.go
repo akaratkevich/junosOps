@@ -91,4 +91,8 @@ func main() {
 	fmt.Println("\n----------------------------------------------------------------")
 	pterm.FgLightYellow.Printf("Execution Time: %s\n", elapsedTime)
 	fmt.Println("\n----------------------------------------------------------------")
+	// Signature
+	pterm.FgGray.Println("Developed by: Anton Karatkevich")
+	pterm.FgGray.Println("Contact: anton.karatkevich@virginmediao2.com")
+	pterm.FgGray.Println("Project Repository: https://github.com/akaratkevich/junosOps.git")
 }
