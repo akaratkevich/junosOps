@@ -29,52 +29,35 @@ func ParseDuration(durationStr string) (time.Duration, error) {
 }
 
 // Parses a string like "33w4d" into a time.Duration.
-
 func parseWeeksAndDays(durationStr string) (time.Duration, error) {
 	var totalDuration time.Duration
 
-	// Split into weeks and time parts
-	parts := strings.Split(durationStr, " ")
-	if len(parts) != 2 {
-		return 0, fmt.Errorf("invalid format for weeks and days: %s", durationStr)
+	// Split into date and time parts
+	parts := strings.Fields(durationStr)
+
+	// Initialize weeks, days, hours, and minutes
+	weeks, days, hours, minutes := 0, 0, 0, 0
+
+	for _, part := range parts {
+		if strings.HasSuffix(part, "w") {
+			weekPart := strings.TrimSuffix(part, "w")
+			weeks, _ = strconv.Atoi(weekPart)
+		} else if strings.HasSuffix(part, "d") {
+			dayPart := strings.TrimSuffix(part, "d")
+			days, _ = strconv.Atoi(dayPart)
+		} else if strings.Contains(part, ":") {
+			timeParts := strings.Split(part, ":")
+			if len(timeParts) == 2 {
+				hours, _ = strconv.Atoi(timeParts[0])
+				minutes, _ = strconv.Atoi(timeParts[1])
+			}
+		}
 	}
 
-	// Parse weeks and days
-	weekDayParts := strings.Split(parts[0], "w")
-	if len(weekDayParts) != 2 {
-		return 0, fmt.Errorf("invalid format for weeks and days: %s", durationStr)
-	}
-
-	weeks, err := strconv.Atoi(weekDayParts[0])
-	if err != nil {
-		return 0, fmt.Errorf("invalid weeks in duration: %s", durationStr)
-	}
-
-	daysPart := weekDayParts[1]
-	days, err := strconv.Atoi(strings.TrimSuffix(daysPart, "d"))
-	if err != nil {
-		return 0, fmt.Errorf("invalid days in duration: %s", durationStr)
-	}
-
-	totalDuration = time.Duration(weeks)*7*24*time.Hour + time.Duration(days)*24*time.Hour
-
-	// Parse hours and minutes
-	timeParts := strings.Split(parts[1], ":")
-	if len(timeParts) != 2 {
-		return 0, fmt.Errorf("invalid time format: %s", parts[1])
-	}
-
-	hours, err := strconv.Atoi(timeParts[0])
-	if err != nil {
-		return 0, fmt.Errorf("invalid hours in duration: %s", durationStr)
-	}
-
-	minutes, err := strconv.Atoi(timeParts[1])
-	if err != nil {
-		return 0, fmt.Errorf("invalid minutes in duration: %s", durationStr)
-	}
-
-	totalDuration += time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute
+	totalDuration = time.Duration(weeks)*7*24*time.Hour +
+		time.Duration(days)*24*time.Hour +
+		time.Duration(hours)*time.Hour +
+		time.Duration(minutes)*time.Minute
 
 	return totalDuration, nil
 }
