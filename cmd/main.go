@@ -6,7 +6,6 @@ import (
 	"junosOps/internal"
 	"log"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -79,26 +78,26 @@ func main() {
 		//	fmt.Printf("Last Flapped: %s\n", data.LastFlapped)
 		//}
 		// Print the updated InterfaceData if LastFlapped is longer than 2 minutes
+		// Print the updated InterfaceData if LastFlapped is longer than 2 minutes
 		for _, data := range interfaceDataList {
-			lastFlappedSeconds, err := strconv.Atoi(data.LastFlapped)
+			duration, err := internal.ParseFlappedTime(data.LastFlapped)
 			if err != nil {
 				log.Printf("Failed to parse last flapped time for device %s interface %s: %v", device.Host, data.Interface, err)
 				continue
 			}
 
-			if time.Duration(lastFlappedSeconds)*time.Second > 10*time.Minute {
+			if duration > 2*time.Minute {
 				fmt.Printf("Device: %s\n", data.Node)
 				fmt.Printf("Interface: %s\n", data.Interface)
 				fmt.Printf("Description: %s\n", data.Description)
-				fmt.Printf("Last Flapped: %s seconds ago\n", data.LastFlapped)
+				fmt.Printf("Last Flapped: %s\n", data.LastFlapped)
 			}
 		}
-
-		// ------------------- Reporting --------------------------------
-		elapsedTime := time.Since(startTime)
-		fmt.Println("\n----------------------------------------------------------------")
-		pterm.FgLightYellow.Printf("Execution Time: %s\n", elapsedTime)
-		fmt.Println("\n----------------------------------------------------------------")
-
 	}
+	// ------------------- Reporting --------------------------------
+	elapsedTime := time.Since(startTime)
+	fmt.Println("\n----------------------------------------------------------------")
+	pterm.FgLightYellow.Printf("Execution Time: %s\n", elapsedTime)
+	fmt.Println("\n----------------------------------------------------------------")
+
 }
