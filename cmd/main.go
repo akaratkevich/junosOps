@@ -27,7 +27,7 @@ func main() {
 	logger := pterm.DefaultLogger.WithLevel(pterm.LogLevelTrace)
 
 	// 1. Get username and password
-	username, password, thresholdStr, err := internal.SetupFlags()
+	username, password, threshold, err := internal.SetupFlags()
 	if err != nil {
 		logger.Fatal("Exiting the program due to setup failure", logger.Args("Reason", err))
 		os.Exit(1)
@@ -36,7 +36,7 @@ func main() {
 	}
 
 	// Parse the threshold duration
-	threshold, err := internal.ParseDuration(*thresholdStr)
+	thresholdDuration, err := internal.ParseDuration(*threshold)
 	if err != nil {
 		logger.Fatal("Failed to parse time threshold", logger.Args("Reason", err))
 		os.Exit(1)
@@ -71,7 +71,7 @@ func main() {
 		wg.Add(1)
 		go func(device internal.Device) {
 			defer wg.Done()
-			count, err := internal.ProcessDevice(device, command, threshold)
+			count, err := internal.ProcessDevice(device, command, thresholdDuration)
 			if err != nil {
 				log.Printf("Failed to process device %s: %v", device.Host, err)
 				return

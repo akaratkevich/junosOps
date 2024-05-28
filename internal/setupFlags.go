@@ -26,7 +26,6 @@ func SetupFlags() (username *string, password *string, threshold *string, err er
 	return
 }
 
-// Check if necessary flags are provided; return an error if any are missing.
 func validateFlags(username *string, password *string, threshold *string) error {
 	// Validate required flags
 	if *username == "" {
@@ -40,7 +39,7 @@ func validateFlags(username *string, password *string, threshold *string) error 
 	}
 
 	// Validate the threshold format
-	if _, err := ParseDuration(*threshold); err != nil {
+	if _, err := parseDuration(*threshold); err != nil {
 		return fmt.Errorf("error: Invalid threshold format. %v", err)
 	}
 	return nil

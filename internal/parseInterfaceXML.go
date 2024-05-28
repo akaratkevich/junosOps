@@ -2,16 +2,17 @@ package internal
 
 import (
 	"encoding/xml"
+	"fmt"
 )
 
 func ParseInterfaceXML(xmlData []byte, nodeName string) ([]InterfaceData, error) {
 	var rpcReply RpcReply
 	err := xml.Unmarshal(xmlData, &rpcReply)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error unmarshalling XML: %v", err)
 	}
 
-	var interfaces []InterfaceData
+	var interfaceDataList []InterfaceData
 	for _, iface := range rpcReply.InterfaceInformation.PhysicalInterface {
 		data := InterfaceData{
 			Node:        nodeName,
@@ -19,7 +20,8 @@ func ParseInterfaceXML(xmlData []byte, nodeName string) ([]InterfaceData, error)
 			Description: iface.Description,
 			LastFlapped: iface.InterfaceFlapped.Text,
 		}
-		interfaces = append(interfaces, data)
+		interfaceDataList = append(interfaceDataList, data)
 	}
-	return interfaces, nil
+
+	return interfaceDataList, nil
 }

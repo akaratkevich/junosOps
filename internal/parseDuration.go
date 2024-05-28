@@ -2,43 +2,42 @@ package internal
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
+// parseDuration converts the threshold string into seconds.
 func ParseDuration(durationStr string) (time.Duration, error) {
-	if durationStr == "Never" {
-		return 0, fmt.Errorf("interface never flapped or no data available")
+	var totalSeconds int64
+
+	parts := strings.FieldsFunc(durationStr, func(r rune) bool {
+		return r == 'd' || r == 'h' || r == 'm' || r == 's' || r == 'w'
+	})
+	units := strings.FieldsFunc(durationStr, func(r rune) bool {
+		return r >= '0' && r <= '9'
+	})
+
+	for i, part := range parts {
+		value, err := strconv.Atoi(part)
+		if err != nil {
+			return 0, err
+		}
+		switch units[i] {
+		case "w":
+			totalSeconds += int64(value * 7 * 24 * 60 * 60)
+		case "d":
+			totalSeconds += int64(value * 24 * 60 * 60)
+		case "h":
+			totalSeconds += int64(value * 60 * 60)
+		case "m":
+			totalSeconds += int64(value * 60)
+		case "s":
+			totalSeconds += int64(value)
+		default:
+			return 0, fmt.Errorf("invalid duration format")
+		}
 	}
 
-	if strings.Contains(durationStr, "w") || strings.Contains(durationStr, "d") {
-		return parseWeeksAndDays(durationStr)
-	}
-
-	return time.ParseDuration(durationStr)
-}
-
-func parseWeeksAndDays(durationStr string) (time.Duration, error) {
-	var totalDuration time.Duration
-	// Regular expression to match the format: "33w4d 12:30"
-	re := regexp.MustCompile(`(?:(\d+)w)?(?:(\d+)d)?\s?(?:(\d+):(\d+))?`)
-
-	matches := re.FindStringSubmatch(durationStr)
-	if matches == nil {
-		return 0, fmt.Errorf("invalid duration format: %s", durationStr)
-	}
-
-	weeks, _ := strconv.Atoi(matches[1])
-	days, _ := strconv.Atoi(matches[2])
-	hours, _ := strconv.Atoi(matches[3])
-	minutes, _ := strconv.Atoi(matches[4])
-
-	totalDuration = time.Duration(weeks)*7*24*time.Hour +
-		time.Duration(days)*24*time.Hour +
-		time.Duration(hours)*time.Hour +
-		time.Duration(minutes)*time.Minute
-
-	return totalDuration, nil
+	return time.Duration(totalSeconds) * time.Second, nil
 }
