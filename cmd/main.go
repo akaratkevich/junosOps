@@ -50,12 +50,7 @@ func main() {
 	// 3. Setup concurrency TODO:
 
 	// 4. Connect and execute
-
-	commands := []string{
-		"show interface description",
-		"show vlan",
-		"show interface status",
-	}
+	command := "show interfaces extensive | display xml"
 
 	for _, host := range devices {
 		device := internal.Device{
@@ -65,20 +60,25 @@ func main() {
 			Password: *password,
 		}
 
-		results, err := internal.ConnectAndExecute(device, commands)
+		results, err := internal.ConnectAndExecute(device, command)
 		if err != nil {
 			log.Fatalf("Error connecting to device %s: %v", device.Host, err)
 		}
 
-		data := &internal.InterfaceData{Node: device.Host}
-		internal.UpdateInterfaceData(data, results)
+		interfaceDataList, err := internal.ParseInterfaceXML(results, device.Host)
+		if err != nil {
+			log.Fatalf("Failed to parse XML for device %s: %v", device.Host, err)
+		}
 
 		// Print the updated InterfaceData
-		fmt.Printf("Device: %s\n", device.Host)
-		fmt.Printf("Description: %s\n", data.Description)
-		fmt.Printf("VLAN: %s\n", data.DownSince)
-		fmt.Printf("Status: %s\n", data.Status)
+		for _, data := range interfaceDataList {
+			fmt.Printf("Device: %s\n", data.Node)
+			fmt.Printf("Interface: %s\n", data.Interface)
+			fmt.Printf("Description: %s\n", data.Description)
+			fmt.Printf("Last Flapped: %s\n", data.LastFlapped)
+		}
 	}
+
 	// ------------------- Reporting --------------------------------
 	elapsedTime := time.Since(startTime)
 	fmt.Println("\n----------------------------------------------------------------")
