@@ -46,7 +46,7 @@ func main() {
 	devices, err := internal.GetDevices()
 	if err != nil {
 		fmt.Printf("Failed to get input devices: %v\n", err)
-		logger.Warn("Failed to get input devices", logger.Args("Reason:", err))
+		logger.Warn("Failed to get input devices", logger.Args("Reason", err))
 		return
 	}
 
