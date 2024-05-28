@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func ProcessDevice(device Device, command string) (int, error) {
+func ProcessDevice(device Device, command string, threshold time.Duration) (int, error) {
 	results, err := ConnectAndExecute(device, command)
 	if err != nil {
 		return 0, fmt.Errorf("error connecting to device %s: %v", device.Host, err)
@@ -27,7 +27,7 @@ func ProcessDevice(device Device, command string) (int, error) {
 
 	count := 0
 
-	// Write the updated InterfaceData if LastFlapped is longer than 2 minutes
+	// Write the updated InterfaceData if LastFlapped is longer than the threshold
 	for _, data := range interfaceDataList {
 		duration, err := ParseFlappedTime(data.LastFlapped)
 		if err != nil {
@@ -35,7 +35,7 @@ func ProcessDevice(device Device, command string) (int, error) {
 			continue
 		}
 
-		if duration > 2*time.Minute {
+		if duration > threshold {
 			count++
 			_, err := fmt.Fprintf(file, "Interface: %s\nDescription: %s\nLast Flapped: %s\n\n", data.Interface, data.Description, data.LastFlapped)
 			if err != nil {

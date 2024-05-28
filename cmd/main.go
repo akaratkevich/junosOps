@@ -27,12 +27,19 @@ func main() {
 	logger := pterm.DefaultLogger.WithLevel(pterm.LogLevelTrace)
 
 	// 1. Get username and password
-	username, password, err := internal.SetupFlags()
+	username, password, thresholdStr, err := internal.SetupFlags()
 	if err != nil {
 		logger.Fatal("Exiting the program due to setup failure", logger.Args("Reason", err))
 		os.Exit(1)
 	} else {
 		logger.Trace("Successfully passed the parameters for setup.")
+	}
+
+	// Parse the threshold duration
+	threshold, err := internal.ParseDuration(*thresholdStr)
+	if err != nil {
+		logger.Fatal("Failed to parse time threshold", logger.Args("Reason", err))
+		os.Exit(1)
 	}
 
 	// 2. Get a list of devices from the user
@@ -64,7 +71,7 @@ func main() {
 		wg.Add(1)
 		go func(device internal.Device) {
 			defer wg.Done()
-			count, err := internal.ProcessDevice(device, command)
+			count, err := internal.ProcessDevice(device, command, threshold)
 			if err != nil {
 				log.Printf("Failed to process device %s: %v", device.Host, err)
 				return
@@ -77,7 +84,7 @@ func main() {
 
 	wg.Wait()
 
-	logger.Info("Total interfaces that flapped for more than 2 minutes:", logger.Args("Count", totalCount))
+	logger.Info("Total interfaces that flapped for more than the threshold:", logger.Args("Count", totalCount))
 
 	// ------------------- Reporting --------------------------------
 	elapsedTime := time.Since(startTime)

@@ -7,10 +7,11 @@ import (
 )
 
 // Return pointers to the values of the flags
-func SetupFlags() (username *string, password *string, err error) {
+func SetupFlags() (username *string, password *string, threshold *string, err error) {
 	// Define flags
 	username = flag.String("u", "", "Username for device access")
 	password = flag.String("p", "", "Password for device access")
+	threshold = flag.String("t", "2m", "Time threshold for interface flaps (e.g., 2m for 2 minutes, 2h for 2 hours, 2d for 2 days, 3M for 3 months)")
 
 	// Custom usage message
 	flag.Usage = func() {
@@ -22,18 +23,21 @@ func SetupFlags() (username *string, password *string, err error) {
 	flag.Parse()
 
 	// Validate the input flags for all other cases
-	err = validateFlags(username, password)
+	err = validateFlags(username, password, threshold)
 	return
 }
 
 // Check if necessary flags are provided; return an error if any are missing.
-func validateFlags(username *string, password *string) error {
+func validateFlags(username *string, password *string, threshold *string) error {
 	// Validate required flags
 	if *username == "" {
 		return fmt.Errorf("error: Username is required. Please provide a username with --u (eg. --u admin)")
 	}
 	if *password == "" {
 		return fmt.Errorf("error: Password is required. Please provide a password with --p (eg. --p password)")
+	}
+	if *threshold == "" {
+		return fmt.Errorf("error: Threshold is required. Please provide a time threshold with --t (e.g., --t 2m)")
 	}
 	return nil
 }
