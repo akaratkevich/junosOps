@@ -77,7 +77,7 @@ func main() {
 		//	fmt.Printf("Description: %s\n", data.Description)
 		//	fmt.Printf("Last Flapped: %s\n", data.LastFlapped)
 		//}
-		// Print the updated InterfaceData if LastFlapped is longer than 2 minutes
+		
 		// Print the updated InterfaceData if LastFlapped is longer than 2 minutes
 		for _, data := range interfaceDataList {
 			duration, err := internal.ParseFlappedTime(data.LastFlapped)
