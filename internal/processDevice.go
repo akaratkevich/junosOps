@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -27,16 +26,15 @@ func ProcessDevice(device Device, command string, threshold time.Duration) (int,
 	defer file.Close()
 
 	count := 0
-
 	// Write the updated InterfaceData if LastFlapped is longer than the threshold
 	for _, data := range interfaceDataList {
-		lastFlappedSeconds, err := strconv.ParseInt(data.LastFlapped, 10, 64)
+		lastFlappedDuration, err := ParseFlappedDuration(data.LastFlapped)
 		if err != nil {
 			log.Printf("Skipping interface %s on device %s: %v", data.Interface, device.Host, err)
 			continue
 		}
 
-		if time.Duration(lastFlappedSeconds)*time.Second > threshold {
+		if lastFlappedDuration > threshold {
 			_, err := fmt.Fprintf(file, "Interface: %s\nDescription: %s\nLast Flapped: %s\n\n", data.Interface, data.Description, data.LastFlapped)
 			if err != nil {
 				log.Printf("Failed to write to file for device %s: %v", device.Host, err)
