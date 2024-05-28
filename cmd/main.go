@@ -58,7 +58,7 @@ func main() {
 	wg := &sync.WaitGroup{}
 
 	// 4. Connect and execute
-	command := "show interfaces extensive | display xml"
+	command := "show interfaces | display xml"
 
 	for _, host := range devices {
 		device := internal.Device{

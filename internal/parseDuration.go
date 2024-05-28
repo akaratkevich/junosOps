@@ -20,7 +20,6 @@ func ParseDuration(durationStr string) (time.Duration, error) {
 	return time.ParseDuration(durationStr)
 }
 
-// parseWeeksAndDays parses a string like "33w4d 12:30", "4d 09:14", or "6w0d 17:30" into a time.Duration.
 func parseWeeksAndDays(durationStr string) (time.Duration, error) {
 	var totalDuration time.Duration
 	// Regular expression to match the format: "33w4d 12:30"
