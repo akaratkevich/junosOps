@@ -18,6 +18,7 @@ func ParseInterfaceXML(xmlData []byte, nodeName string) ([]InterfaceData, error)
 			Node:        nodeName,
 			Interface:   iface.Name,
 			Description: iface.Description,
+			Status:      iface.OperStatus,
 			LastFlapped: iface.InterfaceFlapped.Text,
 		}
 		interfaceDataList = append(interfaceDataList, data)

@@ -5,5 +5,6 @@ type InterfaceData struct {
 	Node        string
 	Interface   string
 	Description string
+	Status      string
 	LastFlapped string
 }

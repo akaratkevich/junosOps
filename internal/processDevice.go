@@ -34,7 +34,7 @@ func ProcessDevice(device Device, command string, threshold time.Duration) (int,
 			continue
 		}
 
-		if lastFlappedDuration > threshold {
+		if lastFlappedDuration < threshold {
 			_, err := fmt.Fprintf(file, "Interface: %s\nDescription: %s\nLast Flapped: %s\n\n", data.Interface, data.Description, data.LastFlapped)
 			if err != nil {
 				log.Printf("Failed to write to file for device %s: %v", device.Host, err)
