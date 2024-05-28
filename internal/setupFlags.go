@@ -39,7 +39,7 @@ func validateFlags(username *string, password *string, threshold *string) error 
 	}
 
 	// Validate the threshold format
-	if _, err := parseDuration(*threshold); err != nil {
+	if _, err := ParseDuration(*threshold); err != nil {
 		return fmt.Errorf("error: Invalid threshold format. %v", err)
 	}
 	return nil
