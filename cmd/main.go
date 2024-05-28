@@ -70,27 +70,26 @@ func main() {
 			log.Fatalf("Failed to parse XML for device %s: %v", device.Host, err)
 		}
 
-		//// Print the updated InterfaceData
-		//for _, data := range interfaceDataList {
-		//	fmt.Printf("Device: %s\n", data.Node)
-		//	fmt.Printf("Interface: %s\n", data.Interface)
-		//	fmt.Printf("Description: %s\n", data.Description)
-		//	fmt.Printf("Last Flapped: %s\n", data.LastFlapped)
-		//}
-		
-		// Print the updated InterfaceData if LastFlapped is longer than 2 minutes
+		// Open a file for writing the interface data
+		file, err := os.Create(fmt.Sprintf("%s_interfaces.txt", device.Host))
+		if err != nil {
+			log.Fatalf("Failed to create file for device %s: %v", device.Host, err)
+		}
+		defer file.Close()
+
+		// Write the updated InterfaceData if LastFlapped is longer than 2 minutes
 		for _, data := range interfaceDataList {
 			duration, err := internal.ParseFlappedTime(data.LastFlapped)
 			if err != nil {
-				log.Printf("Failed to parse last flapped time for device %s interface %s: %v", device.Host, data.Interface, err)
+				log.Printf("Skipping interface %s on device %s: %v", data.Interface, device.Host, err)
 				continue
 			}
 
 			if duration > 2*time.Minute {
-				fmt.Printf("Device: %s\n", data.Node)
-				fmt.Printf("Interface: %s\n", data.Interface)
-				fmt.Printf("Description: %s\n", data.Description)
-				fmt.Printf("Last Flapped: %s\n", data.LastFlapped)
+				_, err := fmt.Fprintf(file, "Interface: %s\nDescription: %s\nLast Flapped: %s\n\n", data.Interface, data.Description, data.LastFlapped)
+				if err != nil {
+					log.Printf("Failed to write to file for device %s: %v", device.Host, err)
+				}
 			}
 		}
 	}
