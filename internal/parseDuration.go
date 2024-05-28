@@ -28,7 +28,6 @@ func ParseDuration(durationStr string) (time.Duration, error) {
 	return duration, err
 }
 
-// Parses a string like "33w4d" into a time.Duration.
 func parseWeeksAndDays(durationStr string) (time.Duration, error) {
 	var totalDuration time.Duration
 
