@@ -6,6 +6,7 @@ import (
 	"junosOps/internal"
 	"log"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -70,19 +71,34 @@ func main() {
 			log.Fatalf("Failed to parse XML for device %s: %v", device.Host, err)
 		}
 
-		// Print the updated InterfaceData
+		//// Print the updated InterfaceData
+		//for _, data := range interfaceDataList {
+		//	fmt.Printf("Device: %s\n", data.Node)
+		//	fmt.Printf("Interface: %s\n", data.Interface)
+		//	fmt.Printf("Description: %s\n", data.Description)
+		//	fmt.Printf("Last Flapped: %s\n", data.LastFlapped)
+		//}
+		// Print the updated InterfaceData if LastFlapped is longer than 2 minutes
 		for _, data := range interfaceDataList {
-			fmt.Printf("Device: %s\n", data.Node)
-			fmt.Printf("Interface: %s\n", data.Interface)
-			fmt.Printf("Description: %s\n", data.Description)
-			fmt.Printf("Last Flapped: %s\n", data.LastFlapped)
+			lastFlappedSeconds, err := strconv.Atoi(data.LastFlapped)
+			if err != nil {
+				log.Printf("Failed to parse last flapped time for device %s interface %s: %v", device.Host, data.Interface, err)
+				continue
+			}
+
+			if time.Duration(lastFlappedSeconds)*time.Second > 10*time.Minute {
+				fmt.Printf("Device: %s\n", data.Node)
+				fmt.Printf("Interface: %s\n", data.Interface)
+				fmt.Printf("Description: %s\n", data.Description)
+				fmt.Printf("Last Flapped: %s seconds ago\n", data.LastFlapped)
+			}
 		}
+
+		// ------------------- Reporting --------------------------------
+		elapsedTime := time.Since(startTime)
+		fmt.Println("\n----------------------------------------------------------------")
+		pterm.FgLightYellow.Printf("Execution Time: %s\n", elapsedTime)
+		fmt.Println("\n----------------------------------------------------------------")
+
 	}
-
-	// ------------------- Reporting --------------------------------
-	elapsedTime := time.Since(startTime)
-	fmt.Println("\n----------------------------------------------------------------")
-	pterm.FgLightYellow.Printf("Execution Time: %s\n", elapsedTime)
-	fmt.Println("\n----------------------------------------------------------------")
-
 }
