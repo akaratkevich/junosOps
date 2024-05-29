@@ -20,15 +20,15 @@ func ProcessDevice(device Device, command string, threshold time.Duration) (int,
 	}
 
 	// Open a file for writing the interface data
-	file, err := os.Create(fmt.Sprintf("%s_interfaces.txt", device.Host))
+	file, err := os.Create(fmt.Sprintf("%s_interfaces_audit.txt", device.Host))
 	if err != nil {
 		return 0, fmt.Errorf("Failed to create file for device %s: %v", device.Host, err)
 	}
 	defer file.Close()
 
 	count := 0
-	
-	// Write the updated InterfaceData if LastFlapped is longer than the threshold and the status is "down"
+
+	// Write the updated InterfaceData if there is a Description, LastFlapped is longer than the threshold and the status is "down"
 	for _, data := range interfaceDataList {
 		if data.Description == "" {
 			continue
