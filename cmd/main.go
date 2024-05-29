@@ -34,14 +34,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Parse the threshold duration
+	// 2. Parse the threshold stamp
 	thresholdSeconds, err := internal.ParseThreshold(*threshold)
 	if err != nil {
 		logger.Fatal("Failed to parse time threshold", logger.Args("Reason", err))
 		os.Exit(1)
 	}
 
-	// 2. Get a list of devices from the user
+	// 3. Get a list of devices from the user
 	devices, err := internal.GetDevices()
 	if err != nil {
 		fmt.Printf("Failed to get input devices: %v\n", err)
@@ -51,45 +51,69 @@ func main() {
 
 	logger.Info("Working with the following devices:", logger.Args("Devices", devices))
 
-	// 3. Setup concurrency
-	var totalCount int
-	var mu sync.Mutex
-	wg := &sync.WaitGroup{}
-
-	// 4. Connect and execute
 	command := "show interfaces | display xml"
 
-	for _, host := range devices {
-		device := internal.Device{
-			Host:     host,
-			Port:     "22", // Default port
-			Username: *username,
-			Password: *password,
-		}
+	// 4. Setup concurrency
+	const workerCount = 10 // Define the number of workers
+	jobs := make(chan internal.Device, len(devices))
+	results := make(chan int, len(devices))
 
-		wg.Add(1)
-		go func(device internal.Device) {
-			defer wg.Done()
+	var totalCount int
+	var wg sync.WaitGroup
+
+	// Worker function
+	worker := func() {
+		for device := range jobs {
 			count, err := internal.ProcessDevice(device, command, thresholdSeconds)
 			if err != nil {
 				log.Printf("Failed to process device %s: %v", device.Host, err)
-				return
+				results <- 0
+				continue
 			}
-			mu.Lock()
-			totalCount += count
-			mu.Unlock()
-		}(device)
+			results <- count
+		}
+		wg.Done()
 	}
 
-	wg.Wait()
+	// Start workers
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go worker()
+	}
 
-	logger.Info("Total interfaces that flapped for more than the threshold:", logger.Args("Count", totalCount))
+	// Send devices to workers
+	go func() {
+		for _, host := range devices {
+			device := internal.Device{
+				Host:     host,
+				Port:     "22", // Default port
+				Username: *username,
+				Password: *password,
+			}
+			jobs <- device
+		}
+		close(jobs)
+	}()
+
+	// Collect results
+	go func() {
+		for count := range results {
+			totalCount += count
+		}
+	}()
+
+	// Wait for all workers to complete
+	wg.Wait()
+	close(results)
+
+	logger.Info("Total count of 'down' interfaces with last flap exceeding the threshold:", logger.Args("Total", totalCount))
 
 	// ------------------- Reporting --------------------------------
 	elapsedTime := time.Since(startTime)
 	fmt.Println("\n----------------------------------------------------------------")
 	pterm.FgLightYellow.Printf("Execution Time: %s\n", elapsedTime)
-	fmt.Println("\n----------------------------------------------------------------")
+	pterm.FgLightYellow.Printf("Number of devices processed: %d\n", len(devices))
+	fmt.Println("\n----------------------------------------------------------------\n\n")
 	// Signature
 	pterm.FgGray.Println("Developed by: Anton Karatkevich")
 	pterm.FgGray.Println("Contact: anton.karatkevich@virginmediao2.com")

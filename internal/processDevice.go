@@ -27,8 +27,13 @@ func ProcessDevice(device Device, command string, threshold time.Duration) (int,
 	defer file.Close()
 
 	count := 0
+	
 	// Write the updated InterfaceData if LastFlapped is longer than the threshold and the status is "down"
 	for _, data := range interfaceDataList {
+		if data.Description == "" {
+			continue
+		}
+
 		if strings.ToLower(data.Status) != "down" {
 			continue
 		}
@@ -47,5 +52,6 @@ func ProcessDevice(device Device, command string, threshold time.Duration) (int,
 			count++
 		}
 	}
+
 	return count, nil
 }
