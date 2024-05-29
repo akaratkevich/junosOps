@@ -21,6 +21,7 @@ func main() {
 	defer logFile.Close()
 	// Set the output of logs to the filePath
 	log.SetOutput(logFile)
+
 	// ---- !!! FROM THIS POINT ON, ALL LOG MESSAGES WILL BE WRITTEN TO THE FILE !!! ----
 
 	// ------------------- Logging to screen --------------------------------
@@ -31,12 +32,10 @@ func main() {
 	if err != nil {
 		logger.Fatal("Exiting the program due to setup failure", logger.Args("Reason", err))
 		os.Exit(1)
-	} else {
-		logger.Trace("Successfully passed the parameters for setup.")
 	}
 
 	// Parse the threshold duration
-	thresholdDuration, err := internal.ParseDuration(*threshold)
+	thresholdSeconds, err := internal.ParseThreshold(*threshold)
 	if err != nil {
 		logger.Fatal("Failed to parse time threshold", logger.Args("Reason", err))
 		os.Exit(1)
@@ -71,7 +70,7 @@ func main() {
 		wg.Add(1)
 		go func(device internal.Device) {
 			defer wg.Done()
-			count, err := internal.ProcessDevice(device, command, thresholdDuration)
+			count, err := internal.ProcessDevice(device, command, thresholdSeconds)
 			if err != nil {
 				log.Printf("Failed to process device %s: %v", device.Host, err)
 				return

@@ -8,12 +8,20 @@ import (
 	"time"
 )
 
-func ParseFlappedDuration(lastFlapped string) (time.Duration, error) {
+func ParseFlappedStamp(lastFlapped string) (time.Duration, error) {
 	if lastFlapped == "Never" {
 		return 0, nil
 	}
 
 	re := regexp.MustCompile(`\((\d+w)?(\d+d)?\s?(\d+:\d+)?\sago\)`)
+	// should match :
+	//"(3w ago)"
+	//"(2d ago)"
+	//"(5w2d ago)"
+	//"(3w 12:45 ago)"
+	//"(4d 13:20 ago)"
+	//"(1w3d 14:05 ago)""
+
 	matches := re.FindStringSubmatch(lastFlapped)
 	if matches == nil {
 		return 0, fmt.Errorf("unexpected format for duration: %s", lastFlapped)

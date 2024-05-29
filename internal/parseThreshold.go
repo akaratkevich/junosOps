@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-// parseDuration converts the threshold string into seconds.
-func ParseDuration(durationStr string) (time.Duration, error) {
+// Convert the threshold string into seconds.
+func ParseThreshold(durationStr string) (time.Duration, error) {
 	var totalSeconds int64
 
 	parts := strings.FieldsFunc(durationStr, func(r rune) bool {
-		return r == 'd' || r == 'h' || r == 'm' || r == 's' || r == 'w'
+		return r == 'd' || r == 'h' || r == 'm' || r == 's' || r == 'w' || r == 'M'
 	})
 	units := strings.FieldsFunc(durationStr, func(r rune) bool {
 		return r >= '0' && r <= '9'
@@ -24,6 +24,8 @@ func ParseDuration(durationStr string) (time.Duration, error) {
 			return 0, err
 		}
 		switch units[i] {
+		case "M":
+			totalSeconds += int64(value * 30 * 24 * 60 * 60)
 		case "w":
 			totalSeconds += int64(value * 7 * 24 * 60 * 60)
 		case "d":
