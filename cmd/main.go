@@ -116,6 +116,6 @@ func main() {
 	fmt.Println("\n----------------------------------------------------------------\n\n")
 	// Signature
 	pterm.FgGray.Println("Developed by: Anton Karatkevich")
-	pterm.FgGray.Println("Contact: anton.karatkevich@virginmediao2.com")
+	pterm.FgGray.Println("Contact: karatkevich.anton@gmail.com")
 	pterm.FgGray.Println("Project Repository: https://github.com/akaratkevich/junosOps.git")
 }
