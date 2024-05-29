@@ -12,7 +12,6 @@ import (
 
 func main() {
 	startTime := time.Now()
-
 	// ------------------- Logging to a file --------------------------------
 	logFile, err := internal.SetupLogging("junosOps-application.log")
 	if err != nil {
@@ -59,17 +58,23 @@ func main() {
 	results := make(chan int, len(devices))
 
 	var totalCount int
+	var totalInterfacesProcessed int
+	var mu sync.Mutex
 	var wg sync.WaitGroup
 
 	// Worker function
 	worker := func() {
 		for device := range jobs {
-			count, err := internal.ProcessDevice(device, command, thresholdSeconds)
+			interfacesProcessed, count, err := internal.ProcessDevice(device, command, thresholdSeconds)
 			if err != nil {
 				log.Printf("Failed to process device %s: %v", device.Host, err)
 				results <- 0
 				continue
 			}
+			mu.Lock()
+			totalCount += count
+			totalInterfacesProcessed += interfacesProcessed
+			mu.Unlock()
 			results <- count
 		}
 		wg.Done()
@@ -97,22 +102,21 @@ func main() {
 
 	// Collect results
 	go func() {
-		for count := range results {
-			totalCount += count
-		}
+		wg.Wait()
+		close(results)
 	}()
 
-	// Wait for all workers to complete
-	wg.Wait()
-	close(results)
-
-	logger.Info("Total count of 'down' interfaces with last flap exceeding the threshold:", logger.Args("Total", totalCount))
+	for range results {
+		// Results are already handled in the worker function
+	}
 
 	// ------------------- Reporting --------------------------------
 	elapsedTime := time.Since(startTime)
 	fmt.Println("\n----------------------------------------------------------------")
-	pterm.FgLightYellow.Printf("Execution Time: %s\n", elapsedTime)
 	pterm.FgLightYellow.Printf("Number of devices processed: %d\n", len(devices))
+	pterm.FgLightYellow.Printf("Total interfaces processed: %d\n", totalInterfacesProcessed)
+	pterm.FgLightYellow.Printf("Total count of 'down' interfaces with last flap exceeding the threshold: %d\n", totalCount)
+	pterm.FgLightYellow.Printf("Execution Time: %s\n", elapsedTime)
 	fmt.Println("\n----------------------------------------------------------------\n")
 	// Signature
 	pterm.FgGray.Println("Developed by: Anton Karatkevich")
