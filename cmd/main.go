@@ -113,7 +113,7 @@ func main() {
 	fmt.Println("\n----------------------------------------------------------------")
 	pterm.FgLightYellow.Printf("Execution Time: %s\n", elapsedTime)
 	pterm.FgLightYellow.Printf("Number of devices processed: %d\n", len(devices))
-	fmt.Println("\n----------------------------------------------------------------\n\n")
+	fmt.Println("\n----------------------------------------------------------------\n")
 	// Signature
 	pterm.FgGray.Println("Developed by: Anton Karatkevich")
 	pterm.FgGray.Println("Contact: karatkevich.anton@gmail.com")
