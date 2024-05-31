@@ -22,12 +22,20 @@ jobs:
             cd ./cmd
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o ../bin/junosOps
       - run:
-          name: Move binary to artifacts directory
-          command: mv junosOps ~/project/bin/
+          name: Verify binary before upload
+          command: |
+            if [ ! -f ~/project/bin/junosOps ]; then
+              echo "Binary file not found!"
+              exit 1
+            fi
+            echo "Binary file found. Proceeding with release."
       - store_artifacts:
           path: ~/project/bin/junosOps
           destination: executables
-      - github-cli/install
+      - github-cli/setup:
+          hostname: github.com
+          token: GITHUB_TOKEN
+          version: 2.40.1
       - run:
           name: Upload binary to GitHub Release
           command: |
@@ -38,8 +46,6 @@ jobs:
             echo "Releasing $VERSION"
             echo $GITHUB_TOKEN | gh auth login --with-token
             gh release create $VERSION ~/project/bin/junosOps --title "junosOps $VERSION" --notes "Automated release from CircleCI"
-
-
 
 workflows:
   build-and-deploy:
