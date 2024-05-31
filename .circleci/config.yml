@@ -5,7 +5,7 @@ orbs:
   github-cli: circleci/github-cli@2.0
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     docker:
       - image: cimg/go:1.21.3
     working_directory: ~/project
@@ -18,23 +18,16 @@ jobs:
       - run:
           name: Build binary
           command: |
+            mkdir -p ~/project/bin
             cd ./cmd
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o ../bin/junosOps
-
       - run:
           name: Move binary to artifacts directory
-          command: mv ../bin/junosOps ~/project/bin/
+          command: mv junosOps ~/project/bin/
       - store_artifacts:
           path: ~/project/bin/junosOps
           destination: executables
-
-  deploy:
-    docker:
-      - image: cimg/base:stable
-    working_directory: ~/project
-    steps:
       - github-cli/install
-      - checkout
       - run:
           name: Upload binary to GitHub Release
           command: |
@@ -49,7 +42,4 @@ jobs:
 workflows:
   build-and-deploy:
     jobs:
-      - build-and-test
-      - deploy:
-          requires:
-            - build-and-test
+      - build-and-deploy
