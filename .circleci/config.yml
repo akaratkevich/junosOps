@@ -48,7 +48,7 @@ jobs:
             fi
             echo "Releasing $VERSION"
             echo $GITHUB_TOKEN | gh auth login --with-token
-            gh release create $VERSION ~/bin/junosOps --title "$VERSION" --notes "Automated release from CircleCI"
+            gh release create $VERSION ~/bin/ --title "junosOps $VERSION" --notes "Automated release from CircleCI"
 
 workflows:
   build-and-deploy:
