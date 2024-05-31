@@ -16,6 +16,7 @@ jobs:
       - run:
           name: Build binary
           command: |
+            pwd
             cd ./cmd
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o junosOps
             mv junosOps ~/junosOps/bin
