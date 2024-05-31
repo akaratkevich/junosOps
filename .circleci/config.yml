@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   go: circleci/go@1.11.0
+  gh: circleci/github-cli@2.2.0
 
 jobs:
   build-and-deploy:
@@ -16,25 +17,24 @@ jobs:
       - run:
           name: Build binary
           command: |
-            pwd
             cd ./cmd
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o junosOps
-            mv junosOps /home/circleci/project/junosOps/bin
+            mv junosOps ../../bin
+      - run:
+          name: Create bin directory
+          command: mkdir -p ~/project/bin
+      - run:
+          name: Move binary to bin directory
+          command: mv ./bin/junosOps ~/project/bin/
       - run:
           name: List bin directory contents
-          command: ls -al /home/circleci/project/junosOps/bin
-      - run:
-          name: Install GitHub CLI
-          command: |
-            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-            sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/githubcli.list > /dev/null
-            sudo apt update
-            sudo apt install gh
+          command: ls -al ~/project/bin
+      - gh/setup:
+          token: GITHUB_TOKEN
       - run:
           name: Verify binary before upload
           command: |
-            if [ ! -f /home/circleci/project/junosOps/bin/junosOps ]; then
+            if [ ! -f ~/project/bin/junosOps ]; then
               echo "Binary file not found!"
               exit 1
             fi
@@ -47,8 +47,7 @@ jobs:
               VERSION="v0.1.0"
             fi
             echo "Releasing $VERSION"
-            echo $GITHUB_TOKEN | gh auth login --with-token
-            gh release create $VERSION ~/junosOps/bin/junosOps --title "junosOps $VERSION" --notes "Automated release from CircleCI"
+            gh release create $VERSION ~/project/bin/junosOps --title "junosOps $VERSION" --notes "Automated release from CircleCI"
 
 workflows:
   build-and-deploy:
