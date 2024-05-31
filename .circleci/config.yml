@@ -17,15 +17,13 @@ jobs:
           name: Build binary
           command: |
             cd ./cmd
-            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o port-audit
-      - run:
-          name: Create artifacts directory
-          command: mkdir -p ~/artifacts
+            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o junosOps
+
       - run:
           name: Move binary to artifacts directory
-          command: mv port-audit ~/artifacts/
+          command: mv junosOps ~/bin/
       - store_artifacts:
-          path: ~/artifacts
+          path: ~/bin
           destination: executables
 
   deploy:
@@ -50,7 +48,7 @@ jobs:
             fi
             echo "Releasing $VERSION"
             echo $GITHUB_TOKEN | gh auth login --with-token
-            gh release create $VERSION ~/artifacts/port-audit --title "$VERSION" --notes "Automated release from CircleCI"
+            gh release create $VERSION ~/bin/junosOps --title "$VERSION" --notes "Automated release from CircleCI"
 
 workflows:
   build-and-deploy:
