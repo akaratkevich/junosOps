@@ -32,10 +32,6 @@ jobs:
       - store_artifacts:
           path: ~/project/bin/junosOps
           destination: executables
-      - github-cli/setup:
-          hostname: github.com
-          token: GITHUB_TOKEN
-          version: 2.40.1
       - run:
           name: Upload binary to GitHub Release
           command: |
