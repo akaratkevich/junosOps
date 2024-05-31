@@ -32,6 +32,7 @@ jobs:
       - store_artifacts:
           path: ~/project/bin/junosOps
           destination: executables
+      - github-cli/install
       - run:
           name: Upload binary to GitHub Release
           command: |
