@@ -4,7 +4,7 @@ orbs:
   go: circleci/go@1.11.0
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     docker:
       - image: cimg/go:1.21.3
     steps:
@@ -18,28 +18,16 @@ jobs:
           command: |
             cd ./cmd
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o junosOps
-            mv junosOps ../..
-      - run:
-          name: Move binary to bin directory
-          command: mv ./junosOps ~/bin/
+            mv junosOps ../../bin
       - run:
           name: List bin directory contents
           command: ls -al ~/bin
-      - store_artifacts:
-          path: ~/bin
-          destination: executables
-
-  deploy:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
       - run:
           name: Install GitHub CLI
           command: |
             curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
             sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/githubcli.list > /dev/null
             sudo apt update
             sudo apt install gh
       - run:
@@ -64,7 +52,4 @@ jobs:
 workflows:
   build-and-deploy:
     jobs:
-      - build-and-test
-      - deploy:
-          requires:
-            - build-and-test
+      - build-and-deploy
