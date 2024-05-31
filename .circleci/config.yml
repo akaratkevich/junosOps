@@ -42,12 +42,11 @@ jobs:
       - run:
           name: Upload binary to GitHub Release
           command: |
-            VERSION=$(git describe --tags)
+            VERSION=$(git describe --tags --always --dirty="-dev" 2>/dev/null)
             if [ -z "$VERSION" ]; then
               VERSION="v0.1.0"
             fi
             echo "Releasing $VERSION"
-            echo $GITHUB_TOKEN | gh auth login --with-token
             gh release create $VERSION ~/bin/junosOps --title "$VERSION" --notes "Automated release from CircleCI"
 
 workflows:
