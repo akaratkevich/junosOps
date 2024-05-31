@@ -2,12 +2,13 @@ version: 2.1
 
 orbs:
   go: circleci/go@1.11.0
-  gh: circleci/github-cli@2.2.0
+  github-cli: circleci/github-cli@2.0
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     docker:
       - image: cimg/go:1.21.3
+    working_directory: ~/project
     steps:
       - checkout
       - run: go version
@@ -18,27 +19,22 @@ jobs:
           name: Build binary
           command: |
             cd ./cmd
-            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o junosOps
-            mv junosOps ../../bin
+            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o ../bin/junosOps
+
       - run:
-          name: Create bin directory
-          command: mkdir -p ~/project/bin
-      - run:
-          name: Move binary to bin directory
-          command: mv ./bin/junosOps ~/project/bin/
-      - run:
-          name: List bin directory contents
-          command: ls -al ~/project/bin
-      - gh/setup:
-          token: GITHUB_TOKEN
-      - run:
-          name: Verify binary before upload
-          command: |
-            if [ ! -f ~/project/bin/junosOps ]; then
-              echo "Binary file not found!"
-              exit 1
-            fi
-            echo "Binary file found. Proceeding with release."
+          name: Move binary to artifacts directory
+          command: mv ../bin/junosOps ~/project/bin/
+      - store_artifacts:
+          path: ~/project/bin/junosOps
+          destination: executables
+
+  deploy:
+    docker:
+      - image: cimg/base:stable
+    working_directory: ~/project
+    steps:
+      - github-cli/install
+      - checkout
       - run:
           name: Upload binary to GitHub Release
           command: |
@@ -47,9 +43,13 @@ jobs:
               VERSION="v0.1.0"
             fi
             echo "Releasing $VERSION"
+            echo $GITHUB_TOKEN | gh auth login --with-token
             gh release create $VERSION ~/project/bin/junosOps --title "junosOps $VERSION" --notes "Automated release from CircleCI"
 
 workflows:
   build-and-deploy:
     jobs:
-      - build-and-deploy
+      - build-and-test
+      - deploy:
+          requires:
+            - build-and-test
