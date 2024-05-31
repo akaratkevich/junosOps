@@ -22,6 +22,9 @@ jobs:
       - run:
           name: Move binary to bin directory
           command: mv ./junosOps ~/bin/
+      - run:
+          name: List bin directory contents
+          command: ls -al ~/bin
       - store_artifacts:
           path: ~/bin
           destination: executables
@@ -39,6 +42,14 @@ jobs:
             echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
             sudo apt update
             sudo apt install gh
+      - run:
+          name: Verify binary before upload
+          command: |
+            if [ ! -f ~/bin/junosOps ]; then
+              echo "Binary file not found!"
+              exit 1
+            fi
+            echo "Binary file found. Proceeding with release."
       - run:
           name: Upload binary to GitHub Release
           command: |
