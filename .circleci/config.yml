@@ -23,12 +23,12 @@ jobs:
       - go/load-cache # Load cached Go modules.
       - go/mod-download # Run 'go mod download'.
       - go/save-cache # Save Go modules to cache.
-      # Add a step to build a compiled binary
+# Add a step to build a compiled binary
       - run:
           name: Build binary
           command: |
-          cd ./cmd
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o port-audit
+            cd ./cmd
+            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o port-audit
 
 workflows:
   # Below is the definition of your workflow.
