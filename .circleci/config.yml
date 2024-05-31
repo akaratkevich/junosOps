@@ -19,10 +19,10 @@ jobs:
             pwd
             cd ./cmd
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o junosOps
-            mv junosOps ~/junosOps/bin
+            mv junosOps /home/circleci/project/junosOps/bin
       - run:
           name: List bin directory contents
-          command: ls -al ~/junosOps/bin
+          command: ls -al /home/circleci/project/junosOps/bin
       - run:
           name: Install GitHub CLI
           command: |
@@ -34,7 +34,7 @@ jobs:
       - run:
           name: Verify binary before upload
           command: |
-            if [ ! -f ~/junosOps/bin/junosOps ]; then
+            if [ ! -f /home/circleci/project/junosOps/bin/junosOps ]; then
               echo "Binary file not found!"
               exit 1
             fi
