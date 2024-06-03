@@ -35,6 +35,30 @@ func ProcessDevice(device Device, command string, threshold time.Duration) (int,
 	}
 	defer configFile.Close()
 
+	// Write additional commands at the beginning of the config file
+	preChecks := []string{
+		"============ PRE - CHECKS ===========",
+		"show configuration | display set",
+		"show interfaces descriptions",
+		"show interfaces terse | no-more",
+		"show interfaces brief",
+		"show bridge domain brief",
+		"show bridge mac-table",
+		"show lacp interfaces",
+		"show lldp neighbors",
+		"show evpn instance",
+		"show evpn database state duplicate",
+		"=====================================\n",
+	}
+
+	for _, cmd := range preChecks {
+		_, err := fmt.Fprintf(configFile, "%s\n", cmd)
+		if err != nil {
+			log.Printf("Failed to write pre-checks commands to config file for device %s: %v", device.Host, err)
+			return 0, 0, err
+		}
+	}
+
 	count := 0
 
 	// Write the updated InterfaceData if there is a Description, LastFlapped is longer than the threshold and the status is "down"
