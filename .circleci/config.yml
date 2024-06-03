@@ -32,17 +32,17 @@ jobs:
       - store_artifacts:
           path: ~/project/bin/junosOps
           destination: executables
-      - github-cli/install
-      - run:
-          name: Upload binary to GitHub Release
-          command: |
-            VERSION=$(git describe --tags --always --dirty="-dev" 2>/dev/null)
-            if [ -z "$VERSION" ]; then
-              VERSION="v0.1.0"
-            fi
-            echo "Releasing $VERSION"
-            echo $GITHUB_TOKEN | gh auth login --with-token
-            gh release create $VERSION ~/project/bin/junosOps --title "junosOps $VERSION" --notes "Automated release from CircleCI"
+    #  - github-cli/install
+     # - run:
+      #    name: Upload binary to GitHub Release
+       #   command: |
+        #    VERSION=$(git describe --tags --always --dirty="-dev" 2>/dev/null)
+         #   if [ -z "$VERSION" ]; then
+          #    VERSION="v0.1.0"
+           # fi
+            #echo "Releasing $VERSION"
+            #echo $GITHUB_TOKEN | gh auth login --with-token
+            #gh release create $VERSION ~/project/bin/junosOps --title "junosOps $VERSION" --notes "Automated release from CircleCI"
 
 workflows:
   build-and-deploy:
