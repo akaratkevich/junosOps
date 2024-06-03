@@ -26,6 +26,15 @@ func ProcessDevice(device Device, command string, threshold time.Duration) (int,
 	}
 	defer file.Close()
 
+	// Open file for writing configuration data
+	configFileName := fmt.Sprintf("config_%s.txt", device.Host)
+	configFile, err := os.Create(configFileName)
+	if err != nil {
+		log.Printf("Failed to create config file for device %s: %v", device.Host, err)
+		return 0, 0, err
+	}
+	defer configFile.Close()
+
 	count := 0
 
 	// Write the updated InterfaceData if there is a Description, LastFlapped is longer than the threshold and the status is "down"
@@ -45,11 +54,22 @@ func ProcessDevice(device Device, command string, threshold time.Duration) (int,
 		}
 
 		if flapped > threshold {
+			count++
 			_, err := fmt.Fprintf(file, "Interface: %s\nDescription: %s\nStatus: %s\nLast Flapped: %s\n\n", data.Interface, data.Description, data.Status, data.LastFlapped)
 			if err != nil {
 				log.Printf("Failed to write to file for device %s: %v", device.Host, err)
+				continue
 			}
-			count++
+			_, err = fmt.Fprintf(configFile, "set interfaces %s description \"%s Decommissioned %s\"\n", data.Interface, data.Description, time.Now().Format("2006-01-02"))
+			if err != nil {
+				log.Printf("Failed to write to config file for device %s: %v", device.Host, err)
+				continue
+			}
+			_, err = fmt.Fprintf(configFile, "set interfaces %s disable\n", data.Interface)
+			if err != nil {
+				log.Printf("Failed to write to config file for device %s: %v", device.Host, err)
+				continue
+			}
 		}
 	}
 
